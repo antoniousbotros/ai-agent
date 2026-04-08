@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Create and manage your customized chatbots",
 };
 
+import { TooltipProvider } from "@/components/ui/tooltip"
+
 export default async function RootLayout({
   children,
   params
@@ -45,7 +47,9 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
         </NextIntlClientProvider>
       </body>
     </html>
