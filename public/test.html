@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabeh AI Test Integration</title>
+    <!-- Basic styling for the test page -->
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; background: #fafafa; padding: 50px; text-align: center; }
+        h1 { color: #0f172a; }
+        .instruction-box { max-width: 600px; background: white; margin: 40px auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); text-align: left; }
+        code { background: #f1f5f9; padding: 3px 6px; border-radius: 4px; font-size: 14px; color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to your Rabeh Test Site</h1>
+    <p>If your AI backend and widget are working correctly, you should see the floating chat button in the bottom right!</p>
+
+    <div class="instruction-box">
+        <h3>How to make it work:</h3>
+        <ol>
+            <li>Ensure <b>Ollama</b> is running on your Mac (<code>ollama run gemma:2b</code>)</li>
+            <li>In Supabase, create a Bot row in the <code>bots</code> table, give it a System Prompt, and copy its <b>UUID</b>.</li>
+            <li>In Supabase, create an API key row in the <code>api_keys</code> table, and copy the <b>KEY_STRING</b>.</li>
+            <li>Edit `public/test.html` and replace the <code>YOUR_API_KEY</code> and <code>YOUR_BOT_ID</code> below!</li>
+        </ol>
+    </div>
+
+    <!-- THIS IS THE RABEH EMBED WIDGET -->
+    <!-- 
+      Using the exact mock keys from the SQL Script!
+    -->
+    <script 
+        src="widget.js" 
+        data-key="RABEH_TEST_KEY_9999" 
+        data-bot="22222222-2222-2222-2222-222222222222"
+        id="rabeh-widget-script">
+    </script>
+
+</body>
+</html>

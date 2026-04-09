@@ -1,9 +1,37 @@
 {
-  "Index": {
-    "title": "مرحباً بك في منصة الذكاء الاصطناعي",
-    "description": "قم ببناء روبوتات محادثة تعتمد على الذكاء الاصطناعي بسلاسة.",
-    "dashboard": "لوحة القيادة",
-    "transactions": "المعاملات",
-    "settings": "الإعدادات"
+  "Dashboard": {
+    "brand_name": "رابح",
+    "search_placeholder": "ابحث في المحادثات...",
+    "menu_gateway": "البوابة",
+    "overview": "نظرة عامة",
+    "usage_logs": "سجلات الاستخدام",
+    "menu_config": "إعدادات الذكاء الاصطناعي",
+    "my_chatbots": "برامج الدردشة الخاصة بي",
+    "api_keys": "مفاتيح API",
+    "embed_widget": "تضمين الأداة",
+    "pro_plan": "الخطة الاحترافية",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "title_workspace": "نظرة عامة على مساحة العمل",
+    "project_name": "رابح",
+    "stat1_title": "طلبات API اليوم",
+    "stat1_badge": "بيانات حية",
+    "stat2_title": "إجمالي الرموز المرسلة",
+    "stat2_badge": "جيما 2B",
+    "stat3_title": "أدوات الدردشة النشطة",
+    "stat3_badge": "3 نطاقات",
+    "stat4_title": "متوسط وقت الاستجابة",
+    "stat4_badge": "مدعوم من Ollama",
+    "stat5_title": "تكلفة الأجهزة الموفرة",
+    "stat5_badge": "مقارنة بـ OpenAI",
+    "stat6_title": "عمليات توليد فاشلة",
+    "stat6_badge": "مستقر جداً",
+    "sys_title": "تحميل نموذج جيما",
+    "sys_subtitle": "الاستدلال المحلي نشط",
+    "sys_status": "متصل",
+    "sys_metric": "متوسط استجابة الرموز",
+    "chart_title": "حجم بوابة API",
+    "chart_subtitle": "الاستعلامات المعالجة عبر جميع الأدوات المنشورة",
+    "chart_now": "الآن"
   }
 }

@@ -1,188 +1,137 @@
-import {useTranslations} from 'next-intl';
 import { 
-  StatCard, SidebarItem, ProgressCircle, ChartContainer, 
-  GhostButton, DropdownPlaceholder 
+  SidebarItem, GlassButton, PremiumDropdown 
 } from "@/components/dashboard/ui-components";
 import { 
-  LayoutDashboard, ShoppingBag, ShoppingCart, Users, 
-  HelpCircle, BarChart, FileBox, Megaphone, Settings, 
-  LogOut, Plus, ShoppingBasket, RefreshCw, Bell, Search,
-  Menu
+  BarChart3, Bot, Key, Settings, 
+  LogOut, Plus, Search,
+  Zap, Database, Code, CreditCard, Network
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useTranslations } from "next-intl";
 
-export default function DashboardPage() {
-  // const t = useTranslations('Index'); // Using dummy labels instead per specific request
-  
+import OverviewTab from "@/components/dashboard/OverviewTab";
+import UsageLogsTab from "@/components/dashboard/UsageLogsTab";
+import ApiKeysTab from "@/components/dashboard/ApiKeysTab";
+import MyBotsTab from "@/components/dashboard/MyBotsTab";
+import EmbedTab from "@/components/dashboard/EmbedTab";
+import BillingTab from "@/components/dashboard/BillingTab";
+import ProfileTab from "@/components/dashboard/ProfileTab";
+import IntegrationsTab from "@/components/dashboard/IntegrationsTab";
+
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const tab = typeof params.tab === 'string' ? params.tab : 'overview';
+
+  // We can't call hooks natively like useTranslations outside a component so we do it here
+  return <DashboardContent activeTab={tab} />;
+}
+
+// Client Side Wrapper just to provide translations cleanly if needed, but it's a Server component!
+function DashboardContent({ activeTab }: { activeTab: string }) {
+  const t = useTranslations('Dashboard');
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview': return <OverviewTab />;
+      case 'usage': return <UsageLogsTab />;
+      case 'bots': return <MyBotsTab />;
+      case 'keys': return <ApiKeysTab />;
+      case 'embed': return <EmbedTab />;
+      case 'billing': return <BillingTab />;
+      case 'profile': return <ProfileTab />;
+      case 'integrations': return <IntegrationsTab />;
+      default: return <OverviewTab />;
+    }
+  };
+
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden">
+    <div className="flex h-screen w-full bg-[#fafafa] dark:bg-[#0a0a0a] font-sans overflow-hidden">
       
-      {/* Desktop Sidebar (Fixed) */}
-      <aside className="hidden md:flex flex-col w-[260px] bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800 shrink-0 h-full">
+      {/* Ultra Minimal Sidebar */}
+      <aside className="hidden md:flex flex-col w-[260px] bg-[#fafafa] dark:bg-[#0a0a0a] border-r border-slate-200/60 dark:border-white/10 shrink-0 h-full p-4 z-20">
         {/* Logo Area */}
-        <div className="h-20 flex items-center px-6 gap-3 pt-4">
-          <div className="w-9 h-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-            <ShoppingBasket className="w-5 h-5" />
+        <div className="h-[60px] flex items-center px-2 shrink-0 mb-4 cursor-pointer">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-md flex items-center justify-center">
+              <Zap className="w-4 h-4 fill-current" />
+            </div>
+            <span className="text-[16px] font-semibold tracking-tight text-slate-900 dark:text-white">{t('brand_name')}</span>
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">SaaS Logo</span>
         </div>
 
-        {/* Scrollable Nav Menu */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-hide">
-          {/* Search Box */}
-          <div className="relative px-2">
-            <Search className="w-4 h-4 absolute ltr:left-5 rtl:right-5 top-1/2 -translate-y-1/2 text-slate-400" />
+        {/* Global Search - Clean Line */}
+        <div className="px-1 mb-6">
+          <div className="relative group">
+            <Search className="w-4 h-4 absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
             <input 
               type="text" 
-              placeholder="Search placeholder" 
-              className="w-full bg-slate-100/80 dark:bg-slate-800 text-sm rounded-xl ltr:pl-9 rtl:pr-9 ltr:pr-4 rtl:pl-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              placeholder={t('search_placeholder')} 
+              className="w-full bg-transparent border border-slate-200/60 dark:border-white/10 text-[13px] font-medium rounded-lg ltr:pl-9 rtl:pr-9 ltr:pr-3 rtl:pl-3 py-2 outline-none focus:border-slate-400 placeholder:text-slate-400 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
             />
-          </div>
-
-          <div className="space-y-1">
-            <div className="px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Menu Placeholder</div>
-            <SidebarItem icon={LayoutDashboard} label="Dashboard Label" active />
-          </div>
-
-          <div className="space-y-1">
-            <div className="px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Sub-menu Placeholder</div>
-            <SidebarItem icon={ShoppingBag} label="Label Placeholder" />
-            <SidebarItem icon={ShoppingCart} label="Label Placeholder" />
-          </div>
-
-          <div className="space-y-1">
-            <div className="px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Accounts & Roles</div>
-            <SidebarItem icon={Users} label="Label Placeholder" />
-            <SidebarItem icon={HelpCircle} label="Label Placeholder" />
-            <SidebarItem icon={BarChart} label="Label Placeholder" />
-          </div>
-
-          <div className="space-y-1 pb-4">
-            <div className="px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Setup</div>
-            <SidebarItem icon={FileBox} label="Label Placeholder" />
-            <SidebarItem icon={Megaphone} label="Label Placeholder" />
           </div>
         </div>
 
-        {/* Bottom Profile / Settings */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto">
-           <div className="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-4 border border-slate-100 dark:border-slate-800">
-              <Skeleton className="w-10 h-10 rounded-full shrink-0" />
-              <div className="flex flex-col gap-1 overflow-hidden">
-                <Skeleton className="w-24 h-4" />
-                <Skeleton className="w-16 h-3" />
+        {/* Linear/Stripe Nav Menu */}
+        <div className="flex-1 overflow-y-auto px-1 space-y-6 scrollbar-hide pb-6">
+          <div className="space-y-0.5">
+            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2">{t('menu_gateway')}</div>
+            <SidebarItem href="?tab=overview" icon={BarChart3} label={t('overview')} active={activeTab === 'overview'} />
+            <SidebarItem href="?tab=usage" icon={Database} label={t('usage_logs')} active={activeTab === 'usage'} />
+          </div>
+
+          <div className="space-y-0.5">
+            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2 mt-4">{t('menu_config')}</div>
+            <SidebarItem href="?tab=bots" icon={Bot} label={t('my_chatbots')} active={activeTab === 'bots'} />
+            <SidebarItem href="?tab=keys" icon={Key} label={t('api_keys')} active={activeTab === 'keys'} />
+            <SidebarItem href="?tab=integrations" icon={Network} label={t('menu_integrations') || "Integrations"} active={activeTab === 'integrations'} />
+            <SidebarItem href="?tab=embed" icon={Code} label={t('embed_widget')} active={activeTab === 'embed'} />
+            <SidebarItem href="?tab=billing" icon={CreditCard} label={t('menu_billing')} active={activeTab === 'billing'} />
+          </div>
+        </div>
+
+        {/* Minimal Context Profile */}
+        <div className="mt-auto px-1">
+           <a href="?tab=profile" className="flex items-center justify-between px-2 py-2 mb-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+              <div className="flex items-center gap-2.5">
+                 <div className="w-7 h-7 rounded-sm bg-slate-200 dark:bg-white/10 flex items-center justify-center font-medium text-slate-700 dark:text-white text-[12px]">M</div>
+                 <div className="flex flex-col">
+                   <span className="text-[13px] font-medium text-slate-900 dark:text-white leading-none">Marcus Profile</span>
+                 </div>
               </div>
-           </div>
-           <div className="space-y-1">
-             <SidebarItem icon={Settings} label="Settings" />
-             <SidebarItem icon={LogOut} label="Logout" />
-           </div>
+              <Settings className="w-[16px] h-[16px] text-slate-400" />
+           </a>
+           <button className="w-full flex items-center gap-2.5 px-2 py-2 text-slate-500 hover:text-slate-900 font-medium text-[13px] rounded-lg hover:bg-slate-100 transition-colors"><LogOut className="w-[16px] h-[16px]"/> {t('logout')}</button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-[#0a0a0a] rounded-tl-3xl md:border-l border-t border-slate-200/60 dark:border-white/10 shadow-[-4px_4px_24px_rgba(0,0,0,0.02)]">
         
-        {/* Topbar */}
-        <header className="h-20 flex items-center justify-between px-6 lg:px-10 bg-slate-50 dark:bg-slate-950 shrink-0 border-b border-transparent">
-          
-          <div className="flex items-center gap-4">
-            {/* Mobile Menu Drawer */}
-            <Sheet>
-               <SheetTrigger className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-200/50 rounded-lg">
-                 <Menu className="w-6 h-6" />
-               </SheetTrigger>
-               <SheetContent side="left" className="w-[280px] p-0 border-r-0 bg-white flex flex-col h-full">
-                  <div className="h-20 flex items-center px-6 gap-3 border-b border-slate-100 shrink-0">
-                    <div className="w-9 h-9 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg">
-                      <ShoppingBasket className="w-5 h-5" />
-                    </div>
-                    <span className="text-xl font-bold tracking-tight text-slate-900">SaaS Logo</span>
-                  </div>
-                  <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-                    <SidebarItem icon={LayoutDashboard} label="Dashboard" active />
-                    <SidebarItem icon={ShoppingBag} label="Products" />
-                    <SidebarItem icon={ShoppingCart} label="Orders" />
-                    <SidebarItem icon={Users} label="Customers" />
-                    <SidebarItem icon={Settings} label="Settings" />
-                  </div>
-               </SheetContent>
-            </Sheet>
-
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 hidden sm:block">Page Title</h1>
+        {/* Clean Header */}
+        <header className="h-[72px] flex items-center justify-between px-8 md:px-12 shrink-0 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200/60 flex items-center justify-center">
+                <span className="text-[14px] font-semibold text-slate-900">R</span>
+             </div>
+             <h1 className="text-[16px] font-semibold text-slate-900 dark:text-white">{t('title_workspace')}</h1>
+             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-medium ml-2">{t('pro_plan')}</span>
           </div>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden sm:flex items-center gap-1 ltr:mr-4 rtl:ml-4">
-              <GhostButton icon={Plus} />
-              <GhostButton icon={ShoppingCart} />
-              <GhostButton icon={RefreshCw} />
-              <GhostButton icon={Bell} />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 ltr:mr-2 rtl:ml-2">
+              <GlassButton icon={Plus} />
             </div>
-            <div className="flex items-center gap-3">
-              <DropdownPlaceholder label="Label Placeholder" />
-              <DropdownPlaceholder label="Label Placeholder" />
-            </div>
+            <PremiumDropdown label={t('project_name')} />
           </div>
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-10 pb-24 md:pb-10">
-          <div className="max-w-[1400px] mx-auto space-y-8">
-            
-            {/* Welcome Head */}
-            <div className="flex flex-col gap-1">
-               <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Title Placeholder</h2>
-               <p className="text-slate-500 dark:text-slate-400">Subtitle Placeholder</p>
-            </div>
-
-            {/* Top Grid Area (Cards + Progress) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-               
-               {/* 6 Stats Cards Grid */}
-               <div className="lg:col-span-2 xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                 <StatCard label="Label Placeholder" state="positive" />
-                 <StatCard label="Label Placeholder" state="positive" />
-                 <StatCard label="Label Placeholder" state="positive" />
-                 <StatCard label="Label Placeholder" state="positive" />
-                 <StatCard label="Label Placeholder" state="positive" />
-                 <StatCard label="Label Placeholder" state="neutral" />
-               </div>
-
-               {/* Large Right Side Arc Progress Card */}
-               <div className="lg:col-span-1 xl:col-span-1">
-                 <ProgressCircle title="Title Placeholder" />
-               </div>
-
-            </div>
-
-            {/* Bottom Chart */}
-            <ChartContainer />
-
+        <div className="flex-1 overflow-y-auto px-8 md:px-12 pt-8 pb-20">
+          <div className="max-w-[1200px] mx-auto w-full">
+             {renderContent()}
           </div>
         </div>
       </main>
-
-      {/* Mobile Bottom Toolbar Navigation */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-white dark:bg-slate-900 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-around px-4 z-40 pb-safe">
-        <a className="flex flex-col items-center gap-1 text-primary">
-          <LayoutDashboard className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Home</span>
-        </a>
-        <a className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
-          <ShoppingBag className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Products</span>
-        </a>
-        <a className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
-          <BarChart className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Reports</span>
-        </a>
-        <a className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
-          <Settings className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Settings</span>
-        </a>
-      </nav>
 
     </div>
   );

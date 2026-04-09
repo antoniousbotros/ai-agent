@@ -1,0 +1,69 @@
+"use client";
+
+import { Code, Copy, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getDashboardData } from "@/app/actions";
+
+export default function EmbedTab() {
+  const [copied, setCopied] = useState(false);
+  const [testKey, setTestKey] = useState("YOUR_API_KEY");
+  const [testBotId, setTestBotId] = useState("YOUR_BOT_ID");
+
+  useEffect(() => {
+    async function fetchIntegrationData() {
+      const { keys, bots } = await getDashboardData();
+      
+      if (keys && keys.length > 0) setTestKey(keys[0].key_string);
+      if (bots && bots.length > 0) setTestBotId(bots[0].id);
+    }
+    fetchIntegrationData();
+  }, []);
+
+  const codeString = `<script 
+  src="http://localhost:3000/widget.js" 
+  data-key="${testKey}" 
+  data-bot="${testBotId}"
+  id="rabeh-widget-script">
+</script>`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto space-y-8">
+      <div>
+        <h2 className="text-[20px] font-semibold text-slate-900">Embed Widget</h2>
+        <p className="text-[14px] text-slate-500 mt-1">Copy and paste this snippet right before the closing &lt;/body&gt; tag of your website.</p>
+      </div>
+
+      <div className="bg-white rounded-[16px] border border-slate-200/60 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.04)] overflow-hidden">
+         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                    <Code className="text-emerald-500 w-5 h-5" />
+                 </div>
+                 <div>
+                    <h3 className="text-[15px] font-semibold text-slate-900">Installation Code</h3>
+                 </div>
+             </div>
+             <button 
+                onClick={handleCopy}
+                className="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60 text-[13px] font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+             >
+                 {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                 {copied ? "Copied" : "Copy to Clipboard"}
+             </button>
+         </div>
+         
+         <div className="p-6 bg-[#0f172a]">
+             <pre className="text-[13px] text-blue-300 font-mono overflow-x-auto">
+                 <code>{codeString}</code>
+             </pre>
+         </div>
+      </div>
+    </div>
+  );
+}

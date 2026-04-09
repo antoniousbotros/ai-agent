@@ -1,27 +1,36 @@
 import { generateGemmaResponse } from '../services/ai.js';
-
-// Dummy Validation (We will connect Supabase later)
-const MOCK_API_KEY = "test_key_123";
+import { validateApiKey, getBotConfig, logUsage } from '../services/db.js';
 
 export default async function chatRoutes(fastify, options) {
   fastify.post('/api/v1/chat', async (request, reply) => {
     try {
       const { apiKey, botId, message } = request.body;
 
-      if (!apiKey || apiKey !== MOCK_API_KEY) {
-        return reply.code(401).send({ error: 'Invalid or missing API Key. Use "test_key_123" for MVP.' });
+      if (!apiKey) return reply.code(400).send({ error: 'API Key is required.' });
+      if (!botId) return reply.code(400).send({ error: 'Bot ID is required.' });
+      if (!message) return reply.code(400).send({ error: 'Message payload is required.' });
+
+      // Connect to Supabase to fetch User
+      const userId = await validateApiKey(apiKey);
+      if (!userId) {
+        return reply.code(401).send({ error: 'Invalid or revoked API Key.' });
       }
 
-      if (!message) {
-        return reply.code(400).send({ error: 'Message payload is required.' });
+      // Fetch Bot Configuration
+      const botConfig = await getBotConfig(botId, userId);
+      if (!botConfig) {
+        return reply.code(404).send({ error: 'Bot not found or unauthorized.' });
       }
 
-      // MVP Mock Bot Setup
-      const systemPrompt = "You are a helpful customer support bot for a SaaS platform. Keep responses very brief and professional.";
-      const model = "gemma:2b"; // Assuming they have local Ollama
+      const systemPrompt = botConfig.prompt || "You are a helpful customer support bot.";
+      const model = botConfig.model_id || "gemma:2b"; 
 
       console.log(`Sending to Ollama (Model: ${model}): "${message}"`);
       const aiResponseText = await generateGemmaResponse(model, systemPrompt, message);
+
+      // Log Usage Asynchronously to Supabase!
+      const tokensEstimated = Math.ceil((message.length + aiResponseText.length) / 4);
+      logUsage(userId, botId, tokensEstimated);
 
       return reply.send({ response: aiResponseText });
     } catch (err) {

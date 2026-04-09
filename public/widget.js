@@ -1,7 +1,7 @@
 (function() {
-  const scriptTag = document.currentScript;
-  const apiKey = scriptTag.getAttribute('data-key');
-  const botId = scriptTag.getAttribute('data-bot');
+  const scriptTag = document.currentScript || document.querySelector('script[src*="widget.js"]');
+  const apiKey = scriptTag ? scriptTag.getAttribute('data-key') : 'test_key_123';
+  const botId = scriptTag ? scriptTag.getAttribute('data-bot') : 'demo_bot';
 
   // 1. Inject Styles
   const style = document.createElement('style');
@@ -68,13 +68,13 @@
     if(!userMsg) return;
 
     // Append User message
-    body.innerHTML += \`<div class="msg-user">\${userMsg.replace(/</g, "&lt;")}</div>\`;
+    body.innerHTML += `<div class="msg-user">${userMsg.replace(/</g, "&lt;")}</div>`;
     input.value = '';
     body.scrollTop = body.scrollHeight;
 
     // Loading indicator
     const loadingId = 'loading-' + Date.now();
-    body.innerHTML += \`<div class="msg-loading" id="\${loadingId}"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>\`;
+    body.innerHTML += `<div class="msg-loading" id="${loadingId}"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
     body.scrollTop = body.scrollHeight;
 
     // Call Fastify Backend API
@@ -89,13 +89,20 @@
       document.getElementById(loadingId).remove();
       
       if(data.error) {
-         body.innerHTML += \`<div class="msg-bot" style="background:#ef4444">\${data.error}</div>\`;
+         body.innerHTML += `<div class="msg-bot" style="background:#ef4444">${data.error}</div>`;
       } else {
-         body.innerHTML += \`<div class="msg-bot">\${data.response.replace(/</g, "&lt;").replace(/\\n/g, '<br/>')}</div>\`;
+         // Basic markdown parsing for bold and line breaks
+         let formattedResponse = data.response
+           .replace(/</g, "&lt;")
+           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+           .replace(/\*(.*?)\*/g, '<em>$1</em>')
+           .replace(/\n/g, '<br/>');
+           
+         body.innerHTML += `<div class="msg-bot">${formattedResponse}</div>`;
       }
     } catch (e) {
       document.getElementById(loadingId).remove();
-      body.innerHTML += \`<div class="msg-bot" style="background:#ef4444">Error connecting to server. Is Fastify running on port 4000?</div>\`;
+      body.innerHTML += `<div class="msg-bot" style="background:#ef4444">Error connecting to server. Is Fastify running on port 4000?</div>`;
     }
     body.scrollTop = body.scrollHeight;
   };

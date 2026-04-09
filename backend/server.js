@@ -1,6 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import chatRoutes from './routes/chat.js';
+import botsRoutes from './routes/bots.js';
+import webhooksRoutes from './routes/webhooks.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -11,6 +13,8 @@ await fastify.register(cors, {
 
 // Register Routes
 fastify.register(chatRoutes);
+fastify.register(botsRoutes);
+fastify.register(webhooksRoutes);
 
 fastify.get('/health', async () => ({ status: 'ok', server: 'fastify', ai: 'gemma' }));
 

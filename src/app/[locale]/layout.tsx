@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Cairo } from "next/font/google";
 import "../globals.css";
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
+import { TooltipProvider } from "@/components/ui/tooltip"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ["latin"],
+  variable: "--font-poppins",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const cairo = Cairo({
+  subsets: ["arabic", "latin"],
+  variable: "--font-cairo",
 });
 
 export const metadata: Metadata = {
   title: "AI Chatbot SaaS",
-  description: "Create and manage your customized chatbots",
+  description: "Create and manage your customized Gemma chatbots",
 };
-
-import { TooltipProvider } from "@/components/ui/tooltip"
 
 export default async function RootLayout({
   children,
@@ -39,13 +39,17 @@ export default async function RootLayout({
   const messages = await getMessages();
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
+  // Choose the font dynamically based on the active locale
+  const fontClass = locale === 'ar' ? cairo.variable : poppins.variable;
+  const fontFamily = locale === 'ar' ? 'font-cairo' : 'font-poppins';
+
   return (
     <html
       lang={locale}
       dir={dir}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fontClass} ${fontFamily} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-[#f4f7fe]">
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>
             {children}

@@ -1,0 +1,30 @@
+{
+  "project_name": "Rabeh AI Conversational SaaS",
+  "stack": {
+    "frontend": "Next.js 15 (App Router, Tailwind v4, next-intl, shadcn/ui)",
+    "backend": "Node.js Fastify Serverless (mapped to /_/backend via Vercel)",
+    "database": "Supabase (PostgreSQL with RLS + pgvector ready)",
+    "hosting": "Vercel Edge & Serverless Environment",
+    "ai_engine": "Local Ollama Instance (gemma:2b fallback)"
+  },
+  "architecture": {
+    "type": "Monolith / Embedded Serverless",
+    "multi_tenant": true,
+    "subdomain_logic": false,
+    "dynamic_prompting": true
+  },
+  "critical_modules": [
+    "Widget Embedding Engine (public/widget.js)",
+    "AI Message Inference Pipeline (backend/routes/chat.js)",
+    "Supabase Key Authentication Layer (backend/services/db.js)",
+    "Next-Intl Globalization Routing (src/app/[locale])",
+    "UI Component Ecosystem (src/components/dashboard/ui-components.tsx)"
+  ],
+  "sensitive_areas": [
+    "auth",
+    "billing",
+    "database",
+    "token_usage_logging",
+    "api_key_validation"
+  ]
+}
