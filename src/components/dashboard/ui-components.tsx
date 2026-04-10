@@ -109,10 +109,17 @@ export function InteractiveChart() {
   );
 }
 
-export function GlassButton({ icon: Icon }: { icon: React.ElementType }) {
+export function GlassButton({ children, icon: Icon, className, onClick }: { children?: React.ReactNode; icon?: React.ElementType; className?: string; onClick?: () => void }) {
   return (
-    <button className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-all bg-white dark:bg-slate-900 border border-transparent hover:border-slate-200/60 dark:hover:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
-      <Icon className="w-[18px] h-[18px]"/>
+    <button 
+      onClick={onClick}
+      className={cn(
+        "px-3 py-1.5 flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-all bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.02)]",
+        className
+      )}
+    >
+      {Icon && <Icon className="w-[16px] h-[16px]"/>}
+      {children && <span className="text-[13px] font-medium">{children}</span>}
     </button>
   );
 }
