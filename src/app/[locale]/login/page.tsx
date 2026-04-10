@@ -4,7 +4,6 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/auth/AuthLayout";
-import { GlassButton } from "@/components/dashboard/ui-components";
 import { LogIn, Mail, Lock, Loader2, Github } from "lucide-react";
 import Link from "next/link";
 
