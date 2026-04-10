@@ -3,7 +3,8 @@
 import { 
   Bot, Save, Loader2, Plus, Trash2, 
   Palette, Brain, Settings, Sparkles, 
-  ChevronRight, Globe, Maximize2, Layout, Copy, Check, ShieldAlert
+  ChevronRight, Globe, Maximize2, Layout, Copy, Check, ShieldAlert,
+  Zap, MessageSquare, Activity, ExternalLink
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
@@ -21,79 +22,21 @@ type BotData = {
   theme: string;
 };
 
-// --- Sub-Component: Live Widget Preview ---
-function WidgetPreview({ bot }: { bot: BotData }) {
-  const t = useTranslations("Dashboard");
-  const isDark = bot.theme === 'dark';
-  const isLeft = bot.position === 'bottom-left';
-  const primaryColor = bot.primary_color || '#3b82f6';
-
-  return (
-    <div className="sticky top-6 w-full aspect-[4/5] max-w-[320px] mx-auto bg-slate-100 dark:bg-slate-900/50 rounded-3xl border-8 border-slate-900 shadow-2xl overflow-hidden relative group">
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-1 bg-slate-800 rounded-full opacity-20"></div>
-      
-      <div className={cn(
-        "absolute bottom-4 w-64 flex flex-col shadow-xl rounded-2xl border overflow-hidden transition-all duration-500",
-        isLeft ? "left-4" : "right-4",
-        isDark ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"
-      )}>
-        <div className="p-3 flex items-center gap-2" style={{ backgroundColor: primaryColor, color: 'white' }}>
-           {bot.logo_url ? (
-             <img src={bot.logo_url} className="w-5 h-5 rounded-full bg-white object-cover" />
-           ) : (
-             <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center"><Bot size={12}/></div>
-           )}
-           <span className="text-[11px] font-bold truncate">{bot.name}</span>
-        </div>
-        <div className="p-4 space-y-3 h-32 overflow-hidden">
-           <div className="flex gap-2">
-              <div className="w-6 h-6 rounded-full shrink-0" style={{ backgroundColor: primaryColor }}></div>
-              <div className="space-y-1 w-full">
-                 <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
-                 <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
-              </div>
-           </div>
-           <div className="flex justify-end gap-2">
-              <div className="space-y-1 w-2/3">
-                 <div className="h-2 bg-blue-100/50 dark:bg-blue-900/20 rounded w-full"></div>
-                 <div className="h-2 bg-blue-100/50 dark:bg-blue-900/20 rounded w-3/4"></div>
-              </div>
-              <div className="w-6 h-6 bg-slate-200 dark:bg-slate-800 rounded-full shrink-0"></div>
-           </div>
-        </div>
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
-           <div className="h-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex-1"></div>
-           <div className="w-8 h-8 rounded-full" style={{ backgroundColor: primaryColor }}></div>
-        </div>
-      </div>
-
-      <div className={cn(
-        "absolute bottom-4 w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white z-20 pointer-events-none transition-all duration-300",
-        isLeft ? "left-4" : "right-4",
-        "scale-75 translate-y-20 group-hover:translate-y-0 group-hover:scale-100 opacity-0 group-hover:opacity-100"
-      )} style={{ backgroundColor: primaryColor }}>
-         <Plus className="rotate-45" />
-      </div>
-
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center pointer-events-none">
-         <Maximize2 className="w-10 h-10 text-slate-300 dark:text-slate-700 mb-2" />
-         <p className="text-[11px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">{t('studio_preview_label')}</p>
-         <p className="text-[10px] text-slate-400 mt-1">{t('studio_preview_desc')}</p>
-      </div>
-    </div>
-  );
-}
+// --- Sub-Component: Model Icon Component ---
+const ModelIcon = ({ model }: { model: string }) => {
+  if (model.includes('gemma')) return <div className="w-10 h-10 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center border border-indigo-500/20"><Zap size={22} fill="currentColor" /></div>;
+  if (model.includes('llama')) return <div className="w-10 h-10 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center border border-blue-500/20"><Brain size={22} /></div>;
+  return <div className="w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center border border-emerald-500/20"><Sparkles size={22} /></div>;
+};
 
 export default function MyBotsTab() {
   const t = useTranslations("Dashboard");
   const [bots, setBots] = useState<BotData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'brain' | 'design' | 'logic'>('brain');
-  const [savingIds, setSavingIds] = useState<Record<string, boolean>>({});
-  const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
+  const [editingBot, setEditingBot] = useState<BotData | null>(null);
+  const [activeTab, setActiveTab ] = useState<'brain' | 'design' | 'logic'>('brain');
   const [creating, setCreating] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadBots();
@@ -105,33 +48,6 @@ export default function MyBotsTab() {
     setLoading(false);
   }
 
-  const handleUpdateField = (id: string, field: keyof BotData, value: string) => {
-    setBots(bots.map(b => b.id === id ? { ...b, [field]: value } : b));
-  };
-
-  const handleSave = async (bot: BotData) => {
-    setSavingIds(prev => ({ ...prev, [bot.id]: true }));
-    await updateBotConfig(
-      bot.id, 
-      bot.name, 
-      bot.system_prompt, 
-      bot.model_name,
-      bot.primary_color,
-      bot.logo_url,
-      bot.position,
-      bot.theme
-    );
-    setSavingIds(prev => ({ ...prev, [bot.id]: false }));
-  };
-
-  const handleDelete = async (bot: BotData) => {
-    if(!window.confirm(`Delete "${bot.name}"?`)) return;
-    setDeletingIds(prev => ({ ...prev, [bot.id]: true }));
-    await deleteBot(bot.id);
-    await loadBots();
-    setDeletingIds(prev => ({ ...prev, [bot.id]: false }));
-  };
-
   const handleCreateNew = async () => {
     setCreating(true);
     const res = await createNewBot();
@@ -139,299 +55,313 @@ export default function MyBotsTab() {
     setCreating(false);
   };
 
-  const copyEmbedCode = (botId: string) => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://rabeh.ai';
-    const code = `<script src="${origin}/widget.js" data-bot-id="${botId}"></script>`;
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleDelete = async (botId: string) => {
+    if(!confirm("Delete this AI Agent?")) return;
+    await deleteBot(botId);
+    await loadBots();
+    setEditingBot(null);
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64 text-slate-400 animate-pulse">{t('studio_init')}</div>;
+  const handleSave = async () => {
+    if (!editingBot) return;
+    setSaving(true);
+    await updateBotConfig(
+      editingBot.id, 
+      editingBot.name, 
+      editingBot.system_prompt, 
+      editingBot.model_name,
+      editingBot.primary_color,
+      editingBot.logo_url,
+      editingBot.position,
+      editingBot.theme
+    );
+    setSaving(false);
+    loadBots();
+  };
 
-  return (
-    <div className="w-full max-w-6xl mx-auto pb-20 px-4">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-        <div className="ltr:text-left rtl:text-right">
-          <div className="flex items-center gap-2 mb-2 ltr:justify-start rtl:justify-end">
-            <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded uppercase tracking-wider">{t('studio_engine_label')}</div>
-          </div>
-          <h2 className="text-[28px] font-bold text-slate-900 dark:text-white tracking-tight leading-none">{t('studio_title')}</h2>
-          <p className="text-[14px] text-slate-500 mt-2">{t('studio_subtitle')}</p>
-        </div>
-        <button 
-           onClick={handleCreateNew}
-           disabled={creating}
-           className="bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold text-[14px] flex items-center justify-center gap-2"
-        >
-           {creating ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
-           {t('studio_new_btn')}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        {bots.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] p-20 text-center">
-             <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <Bot className="text-slate-300 dark:text-slate-600" size={40} />
-             </div>
-             <h3 className="text-[20px] font-bold text-slate-900 dark:text-white">{t('studio_empty')}</h3>
-             <p className="text-[14px] text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">{t('studio_empty_desc')}</p>
-          </div>
-        ) : bots.map((bot) => {
-          const isExpanded = expandedId === bot.id;
-          
-          return (
-            <div 
-              key={bot.id} 
-              className={cn(
-                "group transition-all duration-500 ease-out bg-white dark:bg-slate-900/40 border rounded-[32px] overflow-hidden backdrop-blur-sm",
-                isExpanded ? "border-slate-200 dark:border-slate-800 shadow-2xl ring-1 ring-slate-900/5" : "border-slate-100 dark:border-slate-800/50 hover:border-slate-200"
-              )}
-            >
-              <div 
-                onClick={() => setExpandedId(isExpanded ? null : bot.id)}
-                className="p-6 flex items-center justify-between cursor-pointer select-none"
-              >
-                 <div className="flex items-center gap-5">
-                    <div 
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center border transition-all group-hover:scale-95 duration-500 overflow-hidden shadow-inner bg-white dark:bg-slate-900" 
-                      style={{ borderColor: bot.primary_color + '30' }}
-                    >
-                       {bot.logo_url ? (
-                         <img src={bot.logo_url} className="w-full h-full object-cover" />
-                       ) : (
-                         <Bot style={{ color: bot.primary_color }} size={28} />
-                       )}
-                    </div>
-                    <div className="ltr:text-left rtl:text-right">
-                       <h3 className="text-[17px] font-bold text-slate-900 dark:text-white">{bot.name}</h3>
-                       <p className="text-[12px] text-slate-400 font-medium uppercase tracking-tighter">{bot.model_name} Engine</p>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <div className={cn("hidden sm:block px-3 py-1 rounded-full text-[11px] font-bold border", bot.position === 'bottom-right' ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800" : "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800")}>
-                       {bot.position === 'bottom-right' ? t('studio_pos_right') : t('studio_pos_left')}
-                    </div>
-                    <ChevronRight className={cn("w-5 h-5 text-slate-300 transition-transform duration-500", isExpanded ? "rotate-90 text-slate-900 dark:text-white" : "")} />
-                 </div>
-              </div>
-
-              {isExpanded && (
-                <div className="p-8 pt-2 border-t border-slate-50 dark:border-slate-800 animate-in fade-in slide-in-from-top-4 duration-500">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    
-                    {/* Left Pane: Controls */}
-                    <div className="lg:col-span-7 space-y-8">
-                      {/* Tabs */}
-                      <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit">
-                        {[
-                          { id: 'brain', icon: Brain, label: t('studio_tab_brain') },
-                          { id: 'design', icon: Palette, label: t('studio_tab_design') },
-                          { id: 'logic', icon: Settings, label: t('studio_tab_logic') }
-                        ].map(tab => (
-                          <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={cn(
-                              "flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all",
-                              activeTab === tab.id ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                            )}
-                          >
-                            <tab.icon size={16} />
-                            {tab.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="space-y-6">
-                        {activeTab === 'brain' && (
-                          <div className="space-y-6 animate-in fade-in duration-300">
-                             <div className="space-y-2">
-                               <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_name')}</label>
-                               <input 
-                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[14px] outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium" 
-                                 value={bot.name}
-                                 onChange={(e) => handleUpdateField(bot.id, 'name', e.target.value)}
-                               />
-                             </div>
-                             <div className="space-y-2">
-                               <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_prompt')}</label>
-                               <textarea 
-                                 rows={6}
-                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[14px] outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium leading-relaxed" 
-                                 value={bot.system_prompt}
-                                 onChange={(e) => handleUpdateField(bot.id, 'system_prompt', e.target.value)}
-                               />
-                             </div>
-                             <div className="space-y-2">
-                               <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_model')}</label>
-                               <select 
-                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 text-[14px] outline-none appearance-none cursor-pointer font-medium"
-                                 value={bot.model_name}
-                                 onChange={(e) => handleUpdateField(bot.id, 'model_name', e.target.value)}
-                               >
-                                 <option value="llama3">{t('studio_model_llama')}</option>
-                                 <option value="gpt-4o">{t('studio_model_gpt')}</option>
-                                 <option value="claude-3-sonnet">{t('studio_model_claude')}</option>
-                               </select>
-                             </div>
-                          </div>
-                        )}
-
-                        {activeTab === 'design' && (
-                          <div className="space-y-6 animate-in fade-in duration-300">
-                             <div className="grid grid-cols-2 gap-6">
-                               <div className="space-y-2">
-                                 <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_color')}</label>
-                                 <div className="flex gap-2 p-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl h-[54px] items-center px-4">
-                                    <input 
-                                      type="color" 
-                                      className="w-8 h-8 rounded-lg overflow-hidden border-none bg-transparent cursor-pointer"
-                                      value={bot.primary_color}
-                                      onChange={(e) => handleUpdateField(bot.id, 'primary_color', e.target.value)}
-                                    />
-                                    <span className="text-[13px] font-mono text-slate-500 uppercase">{bot.primary_color}</span>
-                                 </div>
-                               </div>
-                               <div className="space-y-2">
-                                 <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_pos')}</label>
-                                 <div className="flex p-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl h-[54px]">
-                                    <button 
-                                      onClick={() => handleUpdateField(bot.id, 'position', 'bottom-left')}
-                                      className={cn("flex-1 rounded-xl text-[11px] font-extrabold uppercase transition-all", bot.position === 'bottom-left' ? "bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white" : "text-slate-400")}
-                                    >L</button>
-                                    <button 
-                                      onClick={() => handleUpdateField(bot.id, 'position', 'bottom-right')}
-                                      className={cn("flex-1 rounded-xl text-[11px] font-extrabold uppercase transition-all", bot.position === 'bottom-right' ? "bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white" : "text-slate-400")}
-                                    >R</button>
-                                 </div>
-                               </div>
-                             </div>
-
-                             <div className="space-y-2">
-                               <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_theme')}</label>
-                               <div className="grid grid-cols-2 gap-4">
-                                  <button 
-                                    onClick={() => handleUpdateField(bot.id, 'theme', 'light')}
-                                    className={cn("p-4 rounded-2xl border flex items-center gap-3 transition-all", bot.theme === 'light' ? "bg-white dark:bg-slate-800 border-blue-500 dark:border-blue-500 shadow-md" : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-60")}
-                                  >
-                                     <div className="w-4 h-4 rounded-full border border-slate-300 bg-white" />
-                                     <span className="text-[13px] font-bold">{t('studio_theme_light')}</span>
-                                  </button>
-                                  <button 
-                                    onClick={() => handleUpdateField(bot.id, 'theme', 'dark')}
-                                    className={cn("p-4 rounded-2xl border flex items-center gap-3 transition-all", bot.theme === 'dark' ? "bg-white dark:bg-slate-800 border-blue-500 dark:border-blue-500 shadow-md" : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-60")}
-                                  >
-                                     <div className="w-4 h-4 rounded-full bg-slate-900 border border-slate-700" />
-                                     <span className="text-[13px] font-bold">{t('studio_theme_dark')}</span>
-                                  </button>
-                               </div>
-                             </div>
-
-                             <div className="space-y-4">
-                                <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 ltr:text-left rtl:text-right block">{t('studio_field_logo')}</label>
-                                <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[24px] p-8 text-center bg-slate-50/50 dark:bg-slate-950/20 group/upload hover:border-blue-400/50 transition-colors relative">
-                                   {bot.logo_url ? (
-                                     <div className="relative w-16 h-16 mx-auto mb-4 group/img">
-                                        <img src={bot.logo_url} className="w-full h-full rounded-2xl object-cover shadow-lg" />
-                                        <button 
-                                          onClick={() => handleUpdateField(bot.id, 'logo_url', '')}
-                                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/img:opacity-100 transition-opacity"
-                                        ><Trash2 size={12}/></button>
-                                     </div>
-                                   ) : (
-                                     <div className="relative w-16 h-16 mx-auto mb-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-300">
-                                        <Bot size={28} />
-                                     </div>
-                                   )}
-                                   <p className="text-[12px] font-bold text-slate-500 mb-1">{t('studio_upload_label')}</p>
-                                   <input 
-                                     type="file" 
-                                     accept="image/*"
-                                     onChange={(e) => {
-                                       const file = e.target.files?.[0];
-                                       if(file) {
-                                          const reader = new FileReader();
-                                          reader.onloadend = () => handleUpdateField(bot.id, 'logo_url', reader.result as string);
-                                          reader.readAsDataURL(file);
-                                       }
-                                     }}
-                                     className="absolute inset-0 opacity-0 cursor-pointer"
-                                   />
-                                </div>
-                             </div>
-                          </div>
-                        )}
-
-                        {activeTab === 'logic' && (
-                          <div className="space-y-8 animate-in fade-in duration-300">
-                             <div className="bg-slate-900 rounded-3xl p-8 relative overflow-hidden group/logic shadow-2xl">
-                                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover/logic:scale-110 transition-transform"><Globe size={120} /></div>
-                                <h4 className="text-[18px] font-bold text-white flex items-center gap-2 mb-2"><Layout size={20} className="text-blue-400" /> {t('studio_logic_title')}</h4>
-                                <p className="text-[13px] text-slate-400 mb-6 leading-relaxed">{t('studio_logic_desc')}</p>
-                                
-                                <div className="bg-black/40 rounded-2xl p-4 border border-white/5 font-mono text-[11px] text-blue-300/80 mb-6 relative group/code overflow-x-auto" dir="ltr">
-                                  {`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://rabeh.ai'}/widget.js"`}<br/>
-                                  {`  data-bot-id="${bot.id}">`}<br/>
-                                  {`</script>`}
-                                  <button 
-                                    onClick={() => copyEmbedCode(bot.id)}
-                                    className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-colors border border-white/10"
-                                  >
-                                    {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                                  </button>
-                                </div>
-
-                                <button 
-                                   onClick={() => copyEmbedCode(bot.id)}
-                                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-2xl font-bold text-[13px] transition-all flex items-center justify-center gap-2"
-                                >
-                                   {t('studio_logic_copy')}
-                                </button>
-                             </div>
-
-                             <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-8 bg-slate-50/50 dark:bg-slate-900/40 relative">
-                                <div className="absolute top-4 right-4"><Sparkles className="text-blue-500 w-5 h-5 animate-pulse" /></div>
-                                <h4 className="text-[15px] font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2"><ShieldAlert size={18} className="text-slate-400" /> {t('studio_logic_locked')}</h4>
-                                <p className="text-[13px] text-slate-500 leading-relaxed">{t('studio_logic_locked_desc')}</p>
-                             </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Sticky Footer */}
-                      <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                         <button 
-                           onClick={() => handleDelete(bot)}
-                           disabled={deletingIds[bot.id]}
-                           className="flex items-center gap-2 text-[13px] font-bold text-red-500 hover:text-red-600 transition-colors"
-                         >
-                           {deletingIds[bot.id] ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} 
-                           {t('studio_btn_delete')}
-                         </button>
-                         <button 
-                           onClick={() => handleSave(bot)}
-                           disabled={savingIds[bot.id]}
-                           className="bg-slate-900 dark:bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-bold text-[13px] flex items-center gap-2 shadow-xl active:scale-95 transition-all"
-                         >
-                           {savingIds[bot.id] ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                           {t('studio_btn_save')}
-                         </button>
-                      </div>
-                    </div>
-
-                    {/* Right Pane: Preview */}
-                    <div className="lg:col-span-5 relative">
-                       <WidgetPreview bot={bot} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+  if (loading) return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+       {[1,2,3].map(i => <div key={i} className="h-64 bg-slate-100 dark:bg-white/5 rounded-[32px]"></div>)}
     </div>
   );
+
+  return (
+    <div className="w-full max-w-7xl mx-auto pb-20">
+      
+      {/* Header with Glass Gradient */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 bg-white/40 dark:bg-white/5 p-8 rounded-[32px] border border-slate-200/60 dark:border-white/5 backdrop-blur-xl shadow-sm">
+         <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+               <Bot className="text-white" size={32} />
+            </div>
+            <div className="ltr:text-left rtl:text-right">
+               <h2 className="text-[28px] font-bold text-slate-900 dark:text-white leading-tight">AI Agent Laboratory</h2>
+               <p className="text-[14px] text-slate-500 font-medium">{t('studio_subtitle')}</p>
+            </div>
+         </div>
+         <button 
+           onClick={handleCreateNew}
+           disabled={creating}
+           className="h-[52px] px-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-[14px] flex items-center gap-3 hover:opacity-90 active:scale-95 transition-all shadow-xl"
+         >
+           {creating ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+           Deploy New Agent
+         </button>
+      </div>
+
+      {bots.length === 0 ? (
+        <div className="py-32 text-center bg-white dark:bg-white/5 rounded-[40px] border border-dashed border-slate-200 dark:border-white/10">
+           <div className="w-20 h-20 bg-slate-50 dark:bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300">
+              <Plus size={40} />
+           </div>
+           <h3 className="text-[20px] font-bold text-slate-900 dark:text-white mb-2">Build your first Agent</h3>
+           <p className="text-slate-500 max-w-xs mx-auto text-[14px] mb-8 leading-relaxed">Choose a model, customize the intelligence, and deploy to your website in minutes.</p>
+           <button onClick={handleCreateNew} className="text-blue-500 font-bold hover:underline flex items-center gap-2 mx-auto">Click here to start <ArrowRight size={16} /></button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bots.map((bot) => (
+            <div 
+              key={bot.id} 
+              className="group relative bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 p-6 rounded-[32px] hover:border-blue-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1"
+            >
+               {/* Model & Name Header */}
+               <div className="flex items-start justify-between mb-8">
+                  <ModelIcon model={bot.model_name} />
+                  <div className="flex items-center gap-2 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20">
+                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                     Live
+                  </div>
+               </div>
+
+               <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-500 transition-colors">{bot.name}</h3>
+               <p className="text-[12px] text-slate-400 font-medium mb-6 uppercase tracking-tighter">{bot.model_name} Intelligence</p>
+
+               {/* Quick Stats Grid */}
+               <div className="grid grid-cols-2 gap-3 mb-8">
+                  <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
+                     <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Tokens</p>
+                     <p className="text-[14px] font-bold tabular-nums">1.2M</p>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
+                     <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Chats</p>
+                     <p className="text-[14px] font-bold tabular-nums">4.8k</p>
+                  </div>
+               </div>
+
+               {/* Prompt Snippet Overlay */}
+               <div className="mt-4 p-4 bg-slate-50/50 dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5 h-20 overflow-hidden relative">
+                  <p className="text-[11px] text-slate-400 leading-relaxed italic line-clamp-2">"{bot.system_prompt}"</p>
+                  <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-slate-50 dark:from-black/20 to-transparent" />
+               </div>
+
+               {/* Action Buttons Float On Hover */}
+               <div className="mt-6 flex items-center justify-between">
+                  <div className="flex gap-2">
+                     <button className="p-2.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-500" title="View History"><MessageSquare size={18} /></button>
+                     <button className="p-2.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-500" title="Analytics"><Activity size={18} /></button>
+                  </div>
+                  <button 
+                    onClick={() => { setEditingBot(bot); setActiveTab('brain'); }}
+                    className="flex items-center gap-2 text-[13px] font-bold text-blue-500 hover:text-blue-600 transition-colors"
+                  >
+                    Enter Lab <ChevronRight size={16} />
+                  </button>
+               </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Editor Modal Overlay */}
+      {editingBot && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300">
+           <div className="bg-white dark:bg-[#0d0d0d] w-full max-w-6xl h-[90vh] rounded-[40px] shadow-2xl border border-white/5 flex flex-col overflow-hidden relative">
+              
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-10 py-6 border-b border-slate-100 dark:border-white/5 shrink-0">
+                 <div className="flex items-center gap-4">
+                    <ModelIcon model={editingBot.model_name} />
+                    <div className="flex flex-col">
+                       <h3 className="text-[20px] font-bold text-slate-900 dark:text-white leading-none mb-1">{editingBot.name}</h3>
+                       <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{editingBot.id}</p>
+                    </div>
+                 </div>
+                 <button 
+                   onClick={() => setEditingBot(null)}
+                   className="w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center transition-colors"
+                 >
+                   <Plus className="rotate-45" size={24} />
+                 </button>
+              </div>
+
+              <div className="flex-1 flex overflow-hidden">
+                 {/* Sidebar Controls */}
+                 <div className="w-[380px] border-r border-slate-100 dark:border-white/5 overflow-y-auto p-10 space-y-10 scrollbar-hide">
+                    {/* Inner Tabs */}
+                    <div className="flex p-1 bg-slate-100 dark:bg-white/5 rounded-2xl">
+                       {(['brain', 'design', 'logic'] as const).map(t_id => (
+                          <button 
+                            key={t_id}
+                            onClick={() => setActiveTab(t_id)}
+                            className={cn("flex-1 py-2 text-[12px] font-bold capitalize rounded-xl transition-all", activeTab === t_id ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400")}
+                          >{t_id}</button>
+                       ))}
+                    </div>
+
+                    <div className="space-y-8 animate-in fade-in slide-in-from-left-2 duration-500">
+                       {activeTab === 'brain' && (
+                          <>
+                             <div className="space-y-3">
+                                <label className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Agent Name</label>
+                                <input 
+                                   className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-[15px] outline-none focus:border-blue-500 transition-all font-medium"
+                                   value={editingBot.name}
+                                   onChange={(e) => setEditingBot({...editingBot, name: e.target.value})}
+                                />
+                             </div>
+                             <div className="space-y-3">
+                                <label className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Model Engine</label>
+                                <div className="grid grid-cols-1 gap-2">
+                                   {['gemma2-9b', 'llama3-70b', 'gpt-4o'].map(m => (
+                                      <button 
+                                        key={m}
+                                        onClick={() => setEditingBot({...editingBot, model_name: m})}
+                                        className={cn("w-full px-5 py-3 rounded-xl border text-[13px] font-bold text-left flex items-center justify-between group", editingBot.model_name === m ? "bg-blue-500/10 border-blue-500 text-blue-500" : "bg-white dark:bg-transparent border-slate-200 dark:border-white/10 text-slate-500 hover:border-slate-300")}
+                                      >
+                                         {m}
+                                         <div className={cn("w-2 h-2 rounded-full", editingBot.model_name === m ? "bg-blue-500 shadow-[0_0_8px_blue]" : "bg-slate-200")} />
+                                      </button>
+                                   ))}
+                                </div>
+                             </div>
+                             <div className="space-y-3">
+                                <label className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Instruction Set (Personality)</label>
+                                <textarea 
+                                   className="w-full h-48 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-[14px] outline-none focus:border-blue-500 transition-all font-medium leading-relaxed resize-none"
+                                   value={editingBot.system_prompt}
+                                   onChange={(e) => setEditingBot({...editingBot, system_prompt: e.target.value})}
+                                />
+                             </div>
+                          </>
+                       )}
+
+                       {activeTab === 'design' && (
+                          <>
+                            <div className="space-y-6">
+                               <div className="space-y-3">
+                                  <label className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Brand Color</label>
+                                  <div className="flex items-center gap-4 bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-200 dark:border-white/10">
+                                     <input 
+                                        type="color" 
+                                        className="w-10 h-10 border-none bg-transparent cursor-pointer rounded-lg overflow-hidden" 
+                                        value={editingBot.primary_color}
+                                        onChange={(e) => setEditingBot({...editingBot, primary_color: e.target.value})}
+                                     />
+                                     <span className="font-mono text-[14px] font-bold uppercase">{editingBot.primary_color}</span>
+                                  </div>
+                               </div>
+                               <div className="space-y-3">
+                                  <label className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Appearance</label>
+                                  <div className="grid grid-cols-2 gap-3">
+                                     <button onClick={() => setEditingBot({...editingBot, theme: 'light'})} className={cn("p-4 rounded-2xl border flex flex-col gap-2 items-center", editingBot.theme === 'light' ? "border-blue-500 bg-blue-500/5" : "border-slate-100 dark:border-white/5 opacity-50")}>
+                                        <div className="w-full h-8 bg-white border border-slate-200 rounded-md" />
+                                        <span className="text-[11px] font-bold">Light</span>
+                                     </button>
+                                     <button onClick={() => setEditingBot({...editingBot, theme: 'dark'})} className={cn("p-4 rounded-2xl border flex flex-col gap-2 items-center", editingBot.theme === 'dark' ? "border-blue-500 bg-blue-500/5" : "border-slate-100 dark:border-white/5 opacity-50")}>
+                                        <div className="w-full h-8 bg-slate-900 border border-white/5 rounded-md" />
+                                        <span className="text-[11px] font-bold">Dark</span>
+                                     </button>
+                                  </div>
+                               </div>
+                            </div>
+                          </>
+                       )}
+
+                       {activeTab === 'logic' && (
+                         <div className="space-y-6">
+                            <div className="p-6 bg-slate-900 rounded-2xl border border-white/10 relative overflow-hidden">
+                               <h4 className="text-white text-[14px] font-bold mb-2 flex items-center gap-2"><Layout size={16} className="text-blue-500" /> Platform Deployment</h4>
+                               <p className="text-[11px] text-slate-400 leading-relaxed mb-4">Integrate this specific agent into your website using our optimized JS SDK.</p>
+                               <div className="bg-black/50 p-4 rounded-xl border border-white/5 font-mono text-[10px] text-blue-400 mb-4 whitespace-pre-wrap overflow-x-auto" dir="ltr">
+                                  {`<script src="https://rabeh.ai/widget.js"\n data-bot-id="${editingBot.id}"></script>`}
+                               </div>
+                               <button className="w-full bg-blue-600 text-white py-3 rounded-xl text-[12px] font-bold hover:bg-blue-500 transition-colors flex items-center justify-center gap-2">
+                                  <Copy size={14} /> Copy JS ID
+                               </button>
+                            </div>
+                            <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 flex flex-col gap-2">
+                               <button className="w-full flex items-center justify-between p-3 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors">
+                                  <span className="text-[12px] font-bold">Connect Messenger</span>
+                                  <ExternalLink size={14} className="text-slate-400" />
+                               </button>
+                               <button className="w-full flex items-center justify-between p-3 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors">
+                                  <span className="text-[12px] font-bold">Connect WhatsApp</span>
+                                  <ExternalLink size={14} className="text-slate-400" />
+                               </button>
+                            </div>
+                         </div>
+                       )}
+                    </div>
+                 </div>
+
+                 {/* Center Content: Laboratory Preview */}
+                 <div className="flex-1 bg-[#fafafa] dark:bg-[#050505] p-12 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 grid grid-cols-[repeat(40,minmax(0,1fr))] opacity-[0.03] pointer-events-none">
+                       {Array.from({length: 40}).map((_, i) => <div key={i} className="border-r border-slate-900 dark:border-white" />)}
+                    </div>
+                    
+                    {/* Live Widget Preview */}
+                    <div className="w-[360px] aspect-[1/2] rounded-[48px] border-[12px] border-slate-900 dark:border-slate-800 shadow-2xl relative overflow-hidden bg-white dark:bg-slate-900 animate-in zoom-in-95 duration-700">
+                        {/* Mock header */}
+                        <div className="h-16 flex items-center px-6 gap-3" style={{ backgroundColor: editingBot.primary_color, color: 'white' }}>
+                           <Bot size={20} />
+                           <span className="text-[14px] font-bold">{editingBot.name}</span>
+                        </div>
+                        <div className="p-6 flex flex-col gap-4">
+                           <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-2xl rounded-tl-none w-4/5 text-[13px] font-medium leading-relaxed">
+                              Hello! I am your AI assistant. How can I help you today?
+                           </div>
+                           <div className="bg-blue-500 text-white p-4 rounded-2xl rounded-tr-none w-4/5 self-end text-[13px] font-medium leading-relaxed">
+                              I want to automate my customer support.
+                           </div>
+                           <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-2xl rounded-tl-none w-4/5 text-[13px] font-medium leading-relaxed">
+                              I can help with that! I am powered by {editingBot.model_name}.
+                           </div>
+                        </div>
+                        {/* Mock input */}
+                        <div className="absolute bottom-10 left-6 right-6 h-12 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-full px-5 flex items-center justify-between shadow-inner">
+                           <span className="text-[12px] text-slate-400">Type a message...</span>
+                           <div className="w-8 h-8 rounded-full" style={{ backgroundColor: editingBot.primary_color }} />
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-12 flex gap-4">
+                       <button 
+                         onClick={() => handleDelete(editingBot.id)}
+                         className="h-14 px-6 bg-red-50 text-red-600 rounded-2xl font-bold text-[14px] flex items-center gap-2 hover:bg-red-100 transition-all"
+                       >
+                          <Trash2 size={18} /> Delete Agent
+                       </button>
+                       <button 
+                         onClick={handleSave}
+                         disabled={saving}
+                         className="h-14 px-10 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl font-bold text-[14px] flex items-center gap-3 hover:shadow-2xl shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50"
+                       >
+                          {saving ? <Loader2 className="animate-spin" /> : <Save size={18} />}
+                          Sync Configuration
+                       </button>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function ArrowRight({ size }: { size: number }) {
+  return <ChevronRight size={size} />;
 }
