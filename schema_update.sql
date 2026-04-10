@@ -3,6 +3,7 @@ ALTER TABLE public.bots ADD COLUMN IF NOT EXISTS primary_color TEXT DEFAULT '#3b
 ALTER TABLE public.bots ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE public.bots ADD COLUMN IF NOT EXISTS position TEXT DEFAULT 'bottom-right';
 ALTER TABLE public.bots ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light';
+ALTER TABLE public.bots ADD COLUMN IF NOT EXISTS meta_page_access_token TEXT;
 
 -- Ensure chat_transcripts table exists for the history feature
 CREATE TABLE IF NOT EXISTS public.chat_transcripts (

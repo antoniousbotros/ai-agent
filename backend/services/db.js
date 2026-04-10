@@ -26,26 +26,33 @@ export async function validateApiKey(keyString) {
   }
 }
 
-// Fetch bot configuration
+// Fetch bot configuration including branding and channel tokens
 export async function getBotConfig(botId, userId) {
   try {
     const { data, error } = await supabase
       .from('bots')
-      .select('system_prompt, model_name')
+      .select('*')
       .eq('id', botId)
       .eq('user_id', userId)
       .single();
 
     if (error || !data) return null;
     return {
-      prompt: data.system_prompt,
-      model_id: data.model_name
+      name: data.name,
+      system_prompt: data.system_prompt,
+      model_name: data.model_name,
+      primary_color: data.primary_color,
+      logo_url: data.logo_url,
+      position: data.position,
+      theme: data.theme,
+      meta_page_access_token: data.meta_page_access_token
     };
   } catch (e) {
     console.error("Bot Fetch Error:", e);
     return null;
   }
 }
+
 // Log token usage async so it doesn't block
 export async function logUsage(userId, botId, tokens) {
   try {
@@ -63,15 +70,20 @@ export async function logUsage(userId, botId, tokens) {
   }
 }
 
-// Save the full chat transcript text for the Chat History dashboard
+// Save the full chat transcript text using formatted messages JSONB for the system
 export async function logChatTranscript(userId, botId, platform, queryText, responseText) {
   try {
+    const messages = [
+      { role: 'user', content: queryText, timestamp: new Date().toISOString() },
+      { role: 'assistant', content: responseText, timestamp: new Date().toISOString() }
+    ];
+
     await supabase.from('chat_transcripts').insert([{
-      user_id: userId,
       bot_id: botId,
       platform: platform, // 'web' | 'messenger' | 'instagram' | 'slack'
-      query_text: queryText,
-      ai_response: responseText
+      user_identifier: 'Guest', 
+      messages: messages,
+      status: 'active'
     }]);
   } catch(e) {
     console.error("Could not log transcript:", e);

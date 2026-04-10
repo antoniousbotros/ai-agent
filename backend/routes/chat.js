@@ -22,10 +22,9 @@ export default async function chatRoutes(fastify, options) {
         return reply.code(404).send({ error: 'Bot not found or unauthorized.' });
       }
 
-      const systemPrompt = botConfig.prompt || "You are a helpful customer support bot.";
-      const model = botConfig.model_id || "gemma:2b"; 
+      const systemPrompt = botConfig.system_prompt || "You are a helpful customer support bot.";
+      const model = botConfig.model_name || "gemma:2b"; 
 
-      console.log(`Sending to Ollama (Model: ${model}): "${message}"`);
       const aiResponseText = await generateGemmaResponse(model, systemPrompt, message);
 
       // Log Usage + Full Transcript Asynchronously
