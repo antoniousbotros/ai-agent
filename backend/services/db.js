@@ -49,7 +49,6 @@ export async function getBotConfig(botId, userId) {
 // Log token usage async so it doesn't block
 export async function logUsage(userId, botId, tokens) {
   try {
-    // Basic computation: $0.0001 per 1000 tokens for local Gemma hardware cost baseline
     const cost = (tokens / 1000) * 0.0001; 
     
     await supabase.from('usage').insert([{
@@ -61,5 +60,20 @@ export async function logUsage(userId, botId, tokens) {
     
   } catch(e) {
     console.error("Could not log usage:", e);
+  }
+}
+
+// Save the full chat transcript text for the Chat History dashboard
+export async function logChatTranscript(userId, botId, platform, queryText, responseText) {
+  try {
+    await supabase.from('chat_transcripts').insert([{
+      user_id: userId,
+      bot_id: botId,
+      platform: platform, // 'web' | 'messenger' | 'instagram' | 'slack'
+      query_text: queryText,
+      ai_response: responseText
+    }]);
+  } catch(e) {
+    console.error("Could not log transcript:", e);
   }
 }

@@ -18,10 +18,13 @@ const cairo = Cairo({
   variable: "--font-cairo",
 });
 
-export const metadata: Metadata = {
-  title: "AI Chatbot SaaS",
-  description: "Create and manage your customized Gemma chatbots",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: locale === 'ar' ? "رابح - منصة دردشة ذكاء اصطناعي" : "Rabeh AI - Chatbot Platform",
+    description: locale === 'ar' ? "إنشاء وإدارة برامج الدردشة المخصصة الخاصة بك" : "Create and manage your customized chatbots",
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -49,7 +52,7 @@ export default async function RootLayout({
       dir={dir}
       className={`${fontClass} ${fontFamily} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#f4f7fe]">
+      <body className="min-h-full flex flex-col bg-[#f4f7fe] dark:bg-[#0a0a0a]">
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>
             {children}

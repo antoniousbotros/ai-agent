@@ -1,5 +1,5 @@
 import { generateGemmaResponse } from '../services/ai.js';
-import { validateApiKey, getBotConfig, logUsage } from '../services/db.js';
+import { validateApiKey, getBotConfig, logUsage, logChatTranscript } from '../services/db.js';
 
 export default async function chatRoutes(fastify, options) {
   fastify.post('/api/v1/chat', async (request, reply) => {
@@ -28,9 +28,10 @@ export default async function chatRoutes(fastify, options) {
       console.log(`Sending to Ollama (Model: ${model}): "${message}"`);
       const aiResponseText = await generateGemmaResponse(model, systemPrompt, message);
 
-      // Log Usage Asynchronously to Supabase!
+      // Log Usage + Full Transcript Asynchronously
       const tokensEstimated = Math.ceil((message.length + aiResponseText.length) / 4);
       logUsage(userId, botId, tokensEstimated);
+      logChatTranscript(userId, botId, 'web', message, aiResponseText);
 
       return reply.send({ response: aiResponseText });
     } catch (err) {

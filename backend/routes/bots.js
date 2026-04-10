@@ -4,13 +4,22 @@ export default async function botsRoutes(fastify, options) {
   // CREATE a Bot
   fastify.post('/api/v1/bots', async (request, reply) => {
     try {
-      const { name, prompt, model_id, userId } = request.body;
+      const { name, prompt, model_id, userId, primary_color, logo_url, position, theme } = request.body;
       
       if (!userId || !name) return reply.code(400).send({ error: 'User ID and Bot Name are required' });
 
       const { data, error } = await supabase
         .from('bots')
-        .insert([{ user_id: userId, name, system_prompt: prompt, model_name: model_id }])
+        .insert([{ 
+          user_id: userId, 
+          name, 
+          system_prompt: prompt, 
+          model_name: model_id,
+          primary_color: primary_color || '#3b82f6',
+          logo_url: logo_url || null,
+          position: position || 'bottom-right',
+          theme: theme || 'light'
+        }])
         .select()
         .single();
 
@@ -19,6 +28,23 @@ export default async function botsRoutes(fastify, options) {
     } catch (err) {
       fastify.log.error(err);
       return reply.code(500).send({ error: 'Failed to create bot', details: err.message });
+    }
+  });
+
+  // GET Public Bot Config (For Widget)
+  fastify.get('/api/v1/bots/:botId/public', async (request, reply) => {
+    try {
+      const { botId } = request.params;
+      const { data, error } = await supabase
+        .from('bots')
+        .select('name, primary_color, logo_url, position, theme, model_name')
+        .eq('id', botId)
+        .single();
+
+      if (error || !data) return reply.code(404).send({ error: 'Bot not found' });
+      return reply.send(data);
+    } catch (err) {
+      return reply.code(500).send({ error: 'Failed to fetch public config' });
     }
   });
 
@@ -40,15 +66,23 @@ export default async function botsRoutes(fastify, options) {
     }
   });
 
-  // UPDATE a Bot Prompt/Model
+  // UPDATE a Bot Prompt/Model/Visuals
   fastify.put('/api/v1/bots/:botId', async (request, reply) => {
     try {
       const { botId } = request.params;
-      const { prompt, model_id, name } = request.body;
+      const { prompt, model_id, name, primary_color, logo_url, position, theme } = request.body;
       
       const { data, error } = await supabase
         .from('bots')
-        .update({ system_prompt: prompt, model_name: model_id, name })
+        .update({ 
+          system_prompt: prompt, 
+          model_name: model_id, 
+          name,
+          primary_color,
+          logo_url,
+          position,
+          theme
+        })
         .eq('id', botId)
         .select()
         .single();

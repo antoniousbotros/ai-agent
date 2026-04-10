@@ -4,7 +4,7 @@ import {
 import { 
   BarChart3, Bot, Key, Settings, 
   LogOut, Plus, Search,
-  Zap, Database, Code, CreditCard, Network
+  Zap, Database, Code, CreditCard, Network, MessageSquare
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -16,6 +16,8 @@ import EmbedTab from "@/components/dashboard/EmbedTab";
 import BillingTab from "@/components/dashboard/BillingTab";
 import ProfileTab from "@/components/dashboard/ProfileTab";
 import IntegrationsTab from "@/components/dashboard/IntegrationsTab";
+import LanguageSwitcher from "@/components/dashboard/LanguageSwitcher";
+import ChatHistoryTab from "@/components/dashboard/ChatHistoryTab";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -41,6 +43,7 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
       case 'billing': return <BillingTab />;
       case 'profile': return <ProfileTab />;
       case 'integrations': return <IntegrationsTab />;
+      case 'history': return <ChatHistoryTab />;
       default: return <OverviewTab />;
     }
   };
@@ -49,7 +52,7 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
     <div className="flex h-screen w-full bg-[#fafafa] dark:bg-[#0a0a0a] font-sans overflow-hidden">
       
       {/* Ultra Minimal Sidebar */}
-      <aside className="hidden md:flex flex-col w-[260px] bg-[#fafafa] dark:bg-[#0a0a0a] border-r border-slate-200/60 dark:border-white/10 shrink-0 h-full p-4 z-20">
+      <aside className="hidden md:flex flex-col w-[260px] bg-[#fafafa] dark:bg-[#0a0a0a] ltr:border-r rtl:border-l border-slate-200/60 dark:border-white/10 shrink-0 h-full p-4 z-20">
         {/* Logo Area */}
         <div className="h-[60px] flex items-center px-2 shrink-0 mb-4 cursor-pointer">
           <div className="flex items-center gap-2.5">
@@ -74,17 +77,18 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
 
         {/* Linear/Stripe Nav Menu */}
         <div className="flex-1 overflow-y-auto px-1 space-y-6 scrollbar-hide pb-6">
-          <div className="space-y-0.5">
-            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2">{t('menu_gateway')}</div>
+          <div className="space-y-0.5" dir="auto">
+            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2 ltr:text-left rtl:text-right uppercase tracking-wider">{t('menu_gateway')}</div>
             <SidebarItem href="?tab=overview" icon={BarChart3} label={t('overview')} active={activeTab === 'overview'} />
             <SidebarItem href="?tab=usage" icon={Database} label={t('usage_logs')} active={activeTab === 'usage'} />
+            <SidebarItem href="?tab=history" icon={MessageSquare} label={t('menu_history')} active={activeTab === 'history'} />
           </div>
 
-          <div className="space-y-0.5">
-            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2 mt-4">{t('menu_config')}</div>
+          <div className="space-y-0.5" dir="auto">
+            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2 mt-4 ltr:text-left rtl:text-right uppercase tracking-wider">{t('menu_config')}</div>
             <SidebarItem href="?tab=bots" icon={Bot} label={t('my_chatbots')} active={activeTab === 'bots'} />
             <SidebarItem href="?tab=keys" icon={Key} label={t('api_keys')} active={activeTab === 'keys'} />
-            <SidebarItem href="?tab=integrations" icon={Network} label={t('menu_integrations') || "Integrations"} active={activeTab === 'integrations'} />
+            <SidebarItem href="?tab=integrations" icon={Network} label={t('menu_integrations')} active={activeTab === 'integrations'} />
             <SidebarItem href="?tab=embed" icon={Code} label={t('embed_widget')} active={activeTab === 'embed'} />
             <SidebarItem href="?tab=billing" icon={CreditCard} label={t('menu_billing')} active={activeTab === 'billing'} />
           </div>
@@ -96,17 +100,17 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
               <div className="flex items-center gap-2.5">
                  <div className="w-7 h-7 rounded-sm bg-slate-200 dark:bg-white/10 flex items-center justify-center font-medium text-slate-700 dark:text-white text-[12px]">M</div>
                  <div className="flex flex-col">
-                   <span className="text-[13px] font-medium text-slate-900 dark:text-white leading-none">Marcus Profile</span>
+                   <span className="text-[13px] font-medium text-slate-900 dark:text-white leading-none truncate max-w-[120px]">{t('menu_profile')}</span>
                  </div>
               </div>
-              <Settings className="w-[16px] h-[16px] text-slate-400" />
+              <Settings className="w-[16px] h-[16px] text-slate-400 shrink-0" />
            </a>
            <button className="w-full flex items-center gap-2.5 px-2 py-2 text-slate-500 hover:text-slate-900 font-medium text-[13px] rounded-lg hover:bg-slate-100 transition-colors"><LogOut className="w-[16px] h-[16px]"/> {t('logout')}</button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-[#0a0a0a] rounded-tl-3xl md:border-l border-t border-slate-200/60 dark:border-white/10 shadow-[-4px_4px_24px_rgba(0,0,0,0.02)]">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-[#0a0a0a] rounded-tl-3xl md:ltr:border-l md:rtl:border-r border-t border-slate-200/60 dark:border-white/10 shadow-[-4px_4px_24px_rgba(0,0,0,0.02)]">
         
         {/* Clean Header */}
         <header className="h-[72px] flex items-center justify-between px-8 md:px-12 shrink-0 border-b border-slate-100 dark:border-white/10">
@@ -115,11 +119,11 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
                 <span className="text-[14px] font-semibold text-slate-900">R</span>
              </div>
              <h1 className="text-[16px] font-semibold text-slate-900 dark:text-white">{t('title_workspace')}</h1>
-             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-medium ml-2">{t('pro_plan')}</span>
+             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-medium ltr:ml-2 rtl:mr-2">{t('pro_plan')}</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 ltr:mr-2 rtl:ml-2">
-              <GlassButton icon={Plus} />
+            <div className="flex items-center gap-1">
+              <LanguageSwitcher />
             </div>
             <PremiumDropdown label={t('project_name')} />
           </div>

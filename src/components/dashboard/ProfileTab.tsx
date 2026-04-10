@@ -42,20 +42,20 @@ export default function ProfileTab() {
     <div className="w-full max-w-3xl mx-auto space-y-8 pb-12">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-[20px] font-semibold text-slate-900">{t('profile_title') || "Profile Settings"}</h2>
-          <p className="text-[14px] text-slate-500 mt-1">{t('profile_subtitle') || "Update your personal details and workspace branding."}</p>
+          <h2 className="text-[20px] font-semibold text-slate-900 dark:text-white ltr:text-left rtl:text-right">{t('profile_title')}</h2>
+          <p className="text-[14px] text-slate-500 mt-1 ltr:text-left rtl:text-right">{t('profile_subtitle')}</p>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-[14px] text-slate-500">Loading profile data...</p>
+        <p className="text-[14px] text-slate-500 animate-pulse">Loading...</p>
       ) : (
-        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.04)] overflow-hidden">
            
            {/* Avatar Section */}
-           <div className="p-8 border-b border-slate-100 flex items-center gap-6">
+           <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center gap-6 ltr:flex-row rtl:flex-row">
                <div className="relative group cursor-pointer">
-                   <div className="w-24 h-24 rounded-full bg-slate-100 border-4 border-white shadow-sm flex items-center justify-center overflow-hidden">
+                   <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-sm flex items-center justify-center overflow-hidden">
                        <span className="text-[32px] font-medium text-slate-400">
                           {fullName ? fullName.charAt(0).toUpperCase() : "U"}
                        </span>
@@ -64,9 +64,9 @@ export default function ProfileTab() {
                        <Camera className="w-6 h-6 text-white" />
                    </div>
                </div>
-               <div>
-                   <h3 className="text-[16px] font-semibold text-slate-900">Profile Picture</h3>
-                   <p className="text-[13px] text-slate-500 mt-1">Upload a high-res image. Max size 2MB.</p>
+               <div className="ltr:text-left rtl:text-right">
+                   <h3 className="text-[16px] font-semibold text-slate-900 dark:text-white">{t('profile_th_img')}</h3>
+                   <p className="text-[13px] text-slate-500 mt-1">{t('profile_th_img_desc')}</p>
                </div>
            </div>
 
@@ -75,56 +75,56 @@ export default function ProfileTab() {
               {/* Full Name */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
-                     <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
-                        <User className="w-4 h-4 text-slate-400" /> Full Name
+                     <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 ltr:text-left rtl:text-right">
+                        <User className="w-4 h-4 text-slate-400" /> {t('profile_field_name')}
                      </label>
                      <input 
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="John Doe"
-                        className="w-full bg-[#fafafa] border border-slate-200 text-slate-900 text-[14px] rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                        className="w-full bg-[#fafafa] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-[14px] rounded-xl px-4 py-3 outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 transition-all font-medium"
                      />
                  </div>
 
                  {/* Company Name */}
                  <div className="space-y-2">
-                     <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-slate-400" /> Company Name
+                     <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 ltr:text-left rtl:text-right">
+                        <Building2 className="w-4 h-4 text-slate-400" /> {t('profile_field_company')}
                      </label>
                      <input 
                         type="text"
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
                         placeholder="Acme Corp"
-                        className="w-full bg-[#fafafa] border border-slate-200 text-slate-900 text-[14px] rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                        className="w-full bg-[#fafafa] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-[14px] rounded-xl px-4 py-3 outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 transition-all font-medium"
                      />
                  </div>
               </div>
 
               {/* Email Address */}
               <div className="space-y-2">
-                  <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
-                     <Mail className="w-4 h-4 text-slate-400" /> Email Address
+                  <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 ltr:text-left rtl:text-right">
+                     <Mail className="w-4 h-4 text-slate-400" /> {t('profile_field_email')}
                   </label>
                   <input 
                      type="email"
                      value={email}
                      disabled
-                     className="w-full bg-slate-50 border border-slate-200 text-slate-500 text-[14px] rounded-xl px-4 py-3 outline-none opacity-80 cursor-not-allowed font-medium"
+                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-500 text-[14px] rounded-xl px-4 py-3 outline-none opacity-80 cursor-not-allowed font-medium"
                   />
-                  <p className="text-[12px] text-slate-400 mt-1">Contact support to change your account email.</p>
+                  <p className="text-[12px] text-slate-400 mt-1 ltr:text-left rtl:text-right">{t('profile_field_email_desc')}</p>
               </div>
            </div>
 
-           <div className="p-6 bg-[#fafafa] border-t border-slate-100 flex justify-end">
+           <div className="p-6 bg-[#fafafa] dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button 
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-6 py-2.5 rounded-xl flex items-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
+                className="bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-[13px] font-semibold px-6 py-2.5 rounded-xl flex items-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
               >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} 
-                  Save Profile
+                  {t('profile_save_btn')}
               </button>
            </div>
         </div>

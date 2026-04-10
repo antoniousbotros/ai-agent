@@ -1,5 +1,5 @@
 import { generateGemmaResponse } from '../services/ai.js';
-import { getBotConfig, logUsage } from '../services/db.js';
+import { getBotConfig, logUsage, logChatTranscript } from '../services/db.js';
 
 export default async function webhooksRoutes(fastify, options) {
   
@@ -53,9 +53,10 @@ export default async function webhooksRoutes(fastify, options) {
            // Infer Response
            const aiResponseText = await generateGemmaResponse(model, systemPrompt, message);
            
-           // Log Usage 
+           // Log Usage + Transcript
            const tokensEstimated = Math.ceil((message.length + aiResponseText.length) / 4);
            logUsage(userId, botId, tokensEstimated);
+           logChatTranscript(userId, botId, 'messenger', message, aiResponseText);
 
            // Send back to Facebook Graph API
            sendMockFacebookMessage(sender_psid, aiResponseText);

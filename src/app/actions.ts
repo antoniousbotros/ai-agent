@@ -37,12 +37,16 @@ export async function createNewBot() {
   return { success: !error, newBotId, error };
 }
 
-export async function updateBotConfig(botId: string, name: string, prompt: string, modelName: string) {
+export async function updateBotConfig(botId: string, name: string, prompt: string, modelName: string, primaryColor?: string, logoUrl?: string, position?: string, theme?: string) {
   const supabase = getServerAuthClient();
   const { error } = await supabase.from('bots').update({ 
     name: name,
     system_prompt: prompt,
-    model_name: modelName
+    model_name: modelName,
+    primary_color: primaryColor,
+    logo_url: logoUrl,
+    position: position,
+    theme: theme
   }).eq('id', botId);
   revalidatePath('/', 'layout');
   return { success: !error, error };
@@ -94,4 +98,22 @@ export async function updateUserProfile(fullName: string, companyName: string) {
      revalidatePath('/', 'layout');
   }
   return { success: !error, error };
+}
+
+export async function getChatTranscripts(botId?: string, platform?: string) {
+  noStore();
+  const supabase = getServerAuthClient();
+  
+  let query = supabase
+    .from('chat_transcripts')
+    .select('*, bots(name)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (botId) query = query.eq('bot_id', botId);
+  if (platform) query = query.eq('platform', platform);
+
+  const { data, error } = await query;
+  if (error) console.error('getChatTranscripts error:', error);
+  return data || [];
 }
