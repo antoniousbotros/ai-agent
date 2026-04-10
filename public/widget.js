@@ -2,7 +2,7 @@
   const scriptTag = document.currentScript || document.querySelector('script[src*="widget.js"]');
   const apiKey = scriptTag ? scriptTag.getAttribute('data-key') : 'test_key_123';
   const botId = scriptTag ? scriptTag.getAttribute('data-bot') : 'demo_bot';
-  const apiBase = 'http://localhost:4000';
+  const apiBase = scriptTag && scriptTag.src.includes('localhost') ? 'http://localhost:4000' : (scriptTag ? new URL(scriptTag.src).origin + '/_/backend' : window.location.origin + '/_/backend');
 
   async function initWidget() {
     let config = {
