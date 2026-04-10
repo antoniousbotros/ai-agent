@@ -1,152 +1,204 @@
-import { 
-  SidebarItem, GlassButton, PremiumDropdown 
-} from "@/components/dashboard/ui-components";
-import { 
-  BarChart3, Bot, Key, Settings, 
-  LogOut, Plus, Search,
-  Zap, Database, Code, CreditCard, Network, MessageSquare, ShieldAlert
-} from "lucide-react";
+"use client";
+
 import { useTranslations } from "next-intl";
-
-import OverviewTab from "@/components/dashboard/OverviewTab";
-import UsageLogsTab from "@/components/dashboard/UsageLogsTab";
-import ApiKeysTab from "@/components/dashboard/ApiKeysTab";
-import MyBotsTab from "@/components/dashboard/MyBotsTab";
-import EmbedTab from "@/components/dashboard/EmbedTab";
-import BillingTab from "@/components/dashboard/BillingTab";
-import ProfileTab from "@/components/dashboard/ProfileTab";
-import IntegrationsTab from "@/components/dashboard/IntegrationsTab";
+import { 
+  Zap, ArrowRight, Shield, 
+  MessageCircle, BarChart3, Globe,
+  Cpu, Layout, Layers
+} from "lucide-react";
+import Link from "next/link";
 import LanguageSwitcher from "@/components/dashboard/LanguageSwitcher";
-import ChatHistoryTab from "@/components/dashboard/ChatHistoryTab";
-import SuperAdminTab from "@/components/dashboard/SuperAdminTab";
-import { getUserProfile } from "../actions";
+import { GlassButton } from "@/components/dashboard/ui-components";
 
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
-
-export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams;
-  const tab = typeof params.tab === 'string' ? params.tab : 'overview';
-  const profile = await getUserProfile();
-
-  return <DashboardContent activeTab={tab} profile={profile} />;
-}
-
-function DashboardContent({ activeTab, profile }: { activeTab: string, profile: any }) {
+export default function LandingPage() {
   const t = useTranslations('Dashboard');
-  const isAdmin = profile?.role === 'admin';
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'overview': return <OverviewTab />;
-      case 'usage': return <UsageLogsTab />;
-      case 'bots': return <MyBotsTab />;
-      case 'keys': return <ApiKeysTab />;
-      case 'embed': return <EmbedTab />;
-      case 'billing': return <BillingTab />;
-      case 'profile': return <ProfileTab />;
-      case 'integrations': return <IntegrationsTab />;
-      case 'history': return <ChatHistoryTab />;
-      case 'super-admin': return <SuperAdminTab />;
-      default: return <OverviewTab />;
-    }
-  };
 
   return (
-    <div className="flex h-screen w-full bg-[#fafafa] dark:bg-[#0a0a0a] font-sans overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white transition-colors selection:bg-blue-500 selection:text-white">
       
-      {/* Ultra Minimal Sidebar */}
-      <aside className="hidden md:flex flex-col w-[260px] bg-[#fafafa] dark:bg-[#0a0a0a] ltr:border-r rtl:border-l border-slate-200/60 dark:border-white/10 shrink-0 h-full p-4 z-20">
-        {/* Logo Area */}
-        <div className="h-[60px] flex items-center px-2 shrink-0 mb-4 cursor-pointer">
+      {/* Premium Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0a0a0a]/70 backdrop-blur-md border-b border-slate-100 dark:border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-md flex items-center justify-center">
-              <Zap className="w-4 h-4 fill-current" />
-            </div>
-            <span className="text-[16px] font-semibold tracking-tight text-slate-900 dark:text-white">{t('brand_name')}</span>
+             <div className="w-8 h-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-md flex items-center justify-center">
+                <Zap className="w-4 h-4 fill-current" />
+             </div>
+             <span className="text-[18px] font-bold tracking-tight">{t('brand_name')}</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8">
+             <a href="#features" className="text-[14px] font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Features</a>
+             <a href="#pricing" className="text-[14px] font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</a>
+             <a href="#enterprise" className="text-[14px] font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Enterprise</a>
+          </div>
+
+          <div className="flex items-center gap-4">
+             <LanguageSwitcher />
+             <Link href="/login" className="text-[14px] font-semibold hover:text-blue-500 transition-colors hidden sm:block">Login</Link>
+             <Link href="/signup">
+                <button className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full text-[14px] font-bold hover:opacity-90 transition-all flex items-center gap-2">
+                   Get Started <ArrowRight className="w-4 h-4 ltr:rotate-0 rtl:rotate-180" />
+                </button>
+             </Link>
           </div>
         </div>
+      </nav>
 
-        {/* Global Search */}
-        <div className="px-1 mb-6">
-          <div className="relative group">
-            <Search className="w-4 h-4 absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
-            <input 
-              type="text" 
-              placeholder={t('search_placeholder')} 
-              className="w-full bg-transparent border border-slate-200/60 dark:border-white/10 text-[13px] font-medium rounded-lg ltr:pl-9 rtl:pr-9 ltr:pr-3 rtl:pl-3 py-2 outline-none focus:border-slate-400 placeholder:text-slate-400 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
-            />
-          </div>
+      {/* Hero Section */}
+      <section className="relative pt-40 pb-32 px-6 overflow-hidden">
+        {/* Background Gradients */}
+        <div className="absolute top-0 ltr:left-[20%] rtl:right-[20%] w-[60%] h-[40%] bg-blue-500/10 blur-[160px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 ltr:right-[10%] rtl:left-[10%] w-[40%] h-[30%] bg-purple-500/10 blur-[140px] rounded-full pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10 text-center">
+           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[12px] font-bold uppercase tracking-widest mb-8 border border-blue-500/10">
+              <Zap className="w-3.5 h-3.5" /> Empowering Conversational AI
+           </div>
+           
+           <h1 className="text-[48px] md:text-[84px] font-bold tracking-tight leading-[1.05] mb-8 max-w-4xl mx-auto">
+              Smart Agents for <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Every Business</span>
+           </h1>
+
+           <p className="text-[18px] md:text-[20px] text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+              Deploy bilingual AI chatbots across Messenger, WhatsApp, and Web in minutes. Increase engagement and automate support with Google's Gemma models.
+           </p>
+
+           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/signup">
+                 <button className="h-[56px] px-8 bg-blue-600 text-white rounded-2xl text-[16px] font-bold hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-3">
+                    Start Free Trial <ArrowRight className="w-5 h-5 ltr:rotate-0 rtl:rotate-180" />
+                 </button>
+              </Link>
+              <button className="h-[56px] px-8 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[16px] font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
+                 Watch Platform Demo
+              </button>
+           </div>
         </div>
 
-        {/* Sidebar Navigation */}
-        <div className="flex-1 overflow-y-auto px-1 space-y-6 scrollbar-hide pb-6">
-          {isAdmin && (
-            <div className="space-y-0.5" dir="auto">
-              <div className="px-2 text-[11px] font-medium text-blue-500 mb-2 ltr:text-left rtl:text-right uppercase tracking-wider">System Control</div>
-              <SidebarItem href="?tab=super-admin" icon={ShieldAlert} label="Super Admin" active={activeTab === 'super-admin'} />
-            </div>
-          )}
-
-          <div className="space-y-0.5" dir="auto">
-            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2 ltr:text-left rtl:text-right uppercase tracking-wider">{t('menu_gateway')}</div>
-            <SidebarItem href="?tab=overview" icon={BarChart3} label={t('overview')} active={activeTab === 'overview'} />
-            <SidebarItem href="?tab=usage" icon={Database} label={t('usage_logs')} active={activeTab === 'usage'} />
-            <SidebarItem href="?tab=history" icon={MessageSquare} label={t('menu_history')} active={activeTab === 'history'} />
-          </div>
-
-          <div className="space-y-0.5" dir="auto">
-            <div className="px-2 text-[11px] font-medium text-slate-400 mb-2 mt-4 ltr:text-left rtl:text-right uppercase tracking-wider">{t('menu_config')}</div>
-            <SidebarItem href="?tab=bots" icon={Bot} label={t('my_chatbots')} active={activeTab === 'bots'} />
-            <SidebarItem href="?tab=keys" icon={Key} label={t('api_keys')} active={activeTab === 'keys'} />
-            <SidebarItem href="?tab=integrations" icon={Network} label={t('menu_integrations')} active={activeTab === 'integrations'} />
-            <SidebarItem href="?tab=embed" icon={Code} label={t('embed_widget')} active={activeTab === 'embed'} />
-            <SidebarItem href="?tab=billing" icon={CreditCard} label={t('menu_billing')} active={activeTab === 'billing'} />
-          </div>
-        </div>
-
-        {/* Profile / Logout */}
-        <div className="mt-auto px-1">
-           <a href="?tab=profile" className="flex items-center justify-between px-2 py-2 mb-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-              <div className="flex items-center gap-2.5">
-                 <div className="w-7 h-7 rounded-sm bg-slate-200 dark:bg-white/10 flex items-center justify-center font-medium text-slate-700 dark:text-white text-[12px]">{profile?.full_name ? profile.full_name[0] : 'U'}</div>
-                 <div className="flex flex-col">
-                   <span className="text-[13px] font-medium text-slate-900 dark:text-white leading-none truncate max-w-[120px]">{profile?.full_name || t('menu_profile')}</span>
+        {/* Dashboard Preview Frame */}
+        <div className="max-w-6xl mx-auto mt-24 relative">
+           <div className="relative bg-white dark:bg-[#121212] rounded-3xl border border-slate-200 dark:border-white/10 shadow-[0_32px_120px_rgba(0,0,0,0.12)] p-2 md:p-4 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+              <div className="bg-[#fafafa] dark:bg-[#0a0a0a] rounded-2xl overflow-hidden aspect-[16/9] relative border border-slate-100 dark:border-white/5">
+                 {/* Mock UI */}
+                 <div className="absolute top-0 left-0 w-full h-[60px] border-b border-slate-100 dark:border-white/5 flex items-center px-6 justify-between bg-white/50 dark:bg-black/20">
+                    <div className="flex gap-1.5">
+                       <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-white/10" />
+                       <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-white/10" />
+                       <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-white/10" />
+                    </div>
+                    <div className="h-6 w-32 bg-slate-200 dark:bg-white/10 rounded-full" />
+                 </div>
+                 <div className="p-8 flex gap-8">
+                    <div className="w-1/4 h-64 bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
+                    <div className="w-3/4 space-y-4">
+                       <div className="h-40 w-full bg-blue-500/5 rounded-2xl border border-blue-500/10 flex items-center justify-center">
+                          <MessageCircle className="w-12 h-12 text-blue-500 opacity-20" />
+                       </div>
+                       <div className="grid grid-cols-3 gap-4">
+                          <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl" />
+                          <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl" />
+                          <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl" />
+                       </div>
+                    </div>
                  </div>
               </div>
-              <Settings className="w-[16px] h-[16px] text-slate-400 shrink-0" />
-           </a>
-           <button className="w-full flex items-center gap-2.5 px-2 py-2 text-slate-500 hover:text-slate-900 font-medium text-[13px] rounded-lg hover:bg-slate-100 transition-colors"><LogOut className="w-[16px] h-[16px]"/> {t('logout')}</button>
+           </div>
         </div>
-      </aside>
+      </section>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-[#0a0a0a] rounded-tl-3xl md:ltr:border-l md:rtl:border-r border-t border-slate-200/60 dark:border-white/10 shadow-[-4px_4px_24px_rgba(0,0,0,0.02)]">
-        
-        <header className="h-[72px] flex items-center justify-between px-8 md:px-12 shrink-0 border-b border-slate-100 dark:border-white/10">
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200/60 flex items-center justify-center">
-                <span className="text-[14px] font-semibold text-slate-900">R</span>
-             </div>
-             <h1 className="text-[16px] font-semibold text-slate-900 dark:text-white">
-                {activeTab === 'super-admin' ? "Super Admin System" : t('title_workspace')}
-             </h1>
-             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-medium ltr:ml-2 rtl:mr-2">
-                {isAdmin ? "Global Administrator" : t('pro_plan')}
-             </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <PremiumDropdown label={t('project_name')} />
-          </div>
-        </header>
+      {/* Feature Grid */}
+      <section id="features" className="py-24 px-6 bg-[#fafafa] dark:bg-white/[0.02]">
+         <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+               <h2 className="text-[36px] font-bold mb-4 tracking-tight">Enterprise Infrastructure</h2>
+               <p className="text-slate-500 dark:text-slate-400 font-medium">Built for scale, speed, and absolute reliability.</p>
+            </div>
 
-        <div className="flex-1 overflow-y-auto px-8 md:px-12 pt-8 pb-20">
-          <div className="max-w-[1200px] mx-auto w-full">
-             {renderContent()}
-          </div>
-        </div>
-      </main>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               <FeatureCard 
+                  icon={Cpu} 
+                  title="Gemma 2 Inference" 
+                  desc="Leverage the world's most capable open-source architecture for reasoning-heavy tasks." 
+               />
+               <FeatureCard 
+                  icon={Globe} 
+                  title="Native Bilingualism" 
+                  desc="Optimized for English and Arabic (RTL) out of the box with Cairo typography." 
+               />
+               <FeatureCard 
+                  icon={Layout} 
+                  title="Omni-Channel" 
+                  desc="One single backend to rule Messenger, WhatsApp, and your own Website." 
+               />
+               <FeatureCard 
+                  icon={Shield} 
+                  title="Self-Hosted Privacy" 
+                  desc="Your data, your models. Fully compliant with enterprise security standards." 
+               />
+               <FeatureCard 
+                  icon={BarChart3} 
+                  title="Advanced Analytics" 
+                  desc="Track every token, every lead, and every sentiment shift automatically." 
+               />
+               <FeatureCard 
+                  icon={Layers} 
+                  title="Custom Branding" 
+                  desc="Whitelabel the widget with your own colors, fonts, and unique logo." 
+               />
+            </div>
+         </div>
+      </section>
 
+      {/* Trust Quote */}
+      <section className="py-32 px-6 border-y border-slate-100 dark:border-white/5">
+         <div className="max-w-4xl mx-auto text-center italic">
+            <p className="text-[24px] md:text-[32px] font-medium leading-relaxed mb-6">
+               "Rabeh transformed our customer support overnight. We reduced response times by 90% while actually improving customer satisfaction scores."
+            </p>
+            <div className="flex items-center justify-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-white/10" />
+               <div className="text-left">
+                  <p className="text-[14px] font-bold">Omar Al-Farsi</p>
+                  <p className="text-[12px] text-slate-500 uppercase tracking-widest font-bold">CEO at TechOasis</p>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-32 px-6 text-center">
+         <h3 className="text-[32px] md:text-[56px] font-bold mb-8">Ready to deploy your first agent?</h3>
+         <Link href="/signup">
+            <button className="bg-blue-600 text-white px-10 py-5 rounded-full text-[18px] font-bold hover:shadow-2xl hover:shadow-blue-500/30 transition-all active:scale-95">
+               Get Started for Free
+            </button>
+         </Link>
+         <p className="mt-6 text-slate-400 font-medium">No credit card required • Deploy in under 5 minutes</p>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-slate-100 dark:border-white/5 text-center">
+         <div className="flex items-center justify-center gap-2.5 mb-6">
+            <div className="w-6 h-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-md flex items-center justify-center">
+               <Zap className="w-3 h-3 fill-current" />
+            </div>
+            <span className="text-[16px] font-bold tracking-tight">{t('brand_name')}</span>
+         </div>
+         <p className="text-slate-400 text-[13px] font-medium">© {new Date().getFullYear()} Rabeh AI. All rights reserved.</p>
+      </footer>
+
+    </div>
+  );
+}
+
+function FeatureCard({ icon: Icon, title, desc }: any) {
+  return (
+    <div className="p-8 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl hover:border-blue-500/40 transition-all hover:translate-y-[-4px] shadow-sm hover:shadow-lg">
+       <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center mb-6">
+          <Icon className="w-6 h-6" />
+       </div>
+       <h4 className="text-[18px] font-bold mb-3">{title}</h4>
+       <p className="text-[14px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }
