@@ -4,7 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/auth/AuthLayout";
-import { LogIn, Mail, Lock, Loader2, Github } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -90,15 +90,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="relative my-8">
-           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100 dark:border-white/10"></div></div>
-           <div className="relative flex justify-center text-[11px] font-bold uppercase tracking-widest text-slate-400"><span className="bg-white dark:bg-[#121212] px-3">or continue with</span></div>
-        </div>
-
-        <button className="w-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 h-[48px] rounded-xl font-semibold text-slate-700 dark:text-white flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
-           <Github className="w-5 h-5" />
-           GitHub
-        </button>
 
         <p className="text-[14px] text-slate-500 text-center mt-8">
           New to the platform? <Link href="/signup" className="text-blue-500 hover:text-blue-600 font-bold">Create an account</Link>
