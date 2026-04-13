@@ -117,3 +117,55 @@ export async function getChatTranscripts(botId?: string, platform?: string) {
   if (error) console.error('getChatTranscripts error:', error);
   return data || [];
 }
+
+export async function getBotKnowledge(botId: string) {
+  noStore();
+  const supabase = getServerAuthClient();
+  const { data, error } = await supabase
+    .from('bot_knowledge')
+    .select('*')
+    .eq('bot_id', botId)
+    .order('created_at', { ascending: false });
+  return data || [];
+}
+
+export async function addKnowledgeFile(botId: string, fileName: string, filePath: string, fileType: string, notes: string, sizeBytes: number) {
+  const supabase = getServerAuthClient();
+  const { data, error } = await supabase
+    .from('bot_knowledge')
+    .insert({
+      bot_id: botId,
+      file_name: fileName,
+      file_path: filePath,
+      file_type: fileType,
+      notes: notes,
+      size_bytes: sizeBytes
+    })
+    .select()
+    .single();
+  
+  revalidatePath('/', 'layout');
+  return { success: !error, data, error };
+}
+
+export async function updateKnowledgeNotes(id: string, notes: string) {
+  const supabase = getServerAuthClient();
+  const { error } = await supabase
+    .from('bot_knowledge')
+    .update({ notes })
+    .eq('id', id);
+  
+  revalidatePath('/', 'layout');
+  return { success: !error, error };
+}
+
+export async function deleteKnowledgeFile(id: string) {
+  const supabase = getServerAuthClient();
+  const { error } = await supabase
+    .from('bot_knowledge')
+    .delete()
+    .eq('id', id);
+  
+  revalidatePath('/', 'layout');
+  return { success: !error, error };
+}
